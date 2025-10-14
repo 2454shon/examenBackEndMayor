@@ -1,0 +1,54 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+
+        Schema::create('usuarios', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('persona_id'); // <-- Agrega esta línea
+            $table->unsignedBigInteger('rol_id');     // <-- Y esta línea
+            $table->string('nombre_usuario')->unique();
+            $table->string('contrasena');
+            $table->integer('estado');
+
+            $table->foreign('persona_id')->references('id')->on('personas')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('rol_id')->references('id')->on('roles')->onDelete('cascade');
+            $table->rememberToken(); //guarda token en el navegador 
+            $table->timestamps(); //created_at y updated_at
+        });
+
+        Schema::create('contrasena_reset_tokens', function (Blueprint $table) {
+            $table->string('email')->primary();
+            $table->string('token');
+            $table->timestamp('created_at')->nullable();
+        });
+
+        Schema::create('sessions', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->foreignId('user_id')->nullable()->index();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('users');
+        Schema::dropIfExists('contrasena_reset_tokens');
+        Schema::dropIfExists('sessions');
+    }
+};
